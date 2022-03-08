@@ -38,6 +38,12 @@ def startup_wizzard(advanced=False):
 
     print("vsu setup wizzard")
 
+    vsc_path_default = os.environ.get("VSC_PATH")
+    print(os.environ)
+    if vsc_path_default == None:
+        print("Please make sure to define the VSC_PATH enviroment variable")
+        exit()
+
     basenames = find_basenames()
     if len(basenames) == 1:
         basename = input_with_default(f"Enter basename ({basenames[0]}): ", basenames[0])
@@ -54,8 +60,7 @@ def startup_wizzard(advanced=False):
     config["data_dir"] = advanced_input("Enter data directory: ", "data", advanced)
     config["build_dir"] = advanced_input("Enter build directory: ", ".vsu", advanced)
 
-    config["VSC_PATH"] = advanced_input("VSimComposer.sh directory: ",
-            os.environ.get("VSC_PATH"), advanced)
+    config["VSC_PATH"] = advanced_input("VSimComposer.sh directory: ", vsc_path_default, advanced)
     config["VSC"] = config["VSC_PATH"] + "/VSimComposer.sh"
     config["S2P"] = config["VSC_PATH"] + "/engine/bin/sdf2vpre"
 
