@@ -55,9 +55,9 @@ def startup_wizzard(advanced=False):
     config["build_dir"] = advanced_input("Enter build directory: ", ".vsu", advanced)
 
     config["VSC_PATH"] = advanced_input("VSimComposer.sh directory: ",
-            "/Applications/VSim-11.0/VSimComposer.app/Contents/Resources/", advanced)
-    config["VSC"] = config["VSC_PATH"] + "VSimComposer.sh"
-    config["S2P"] = config["VSC_PATH"] + "engine/bin/sdf2vpre"
+            os.environ.get("VSC_PATH"), advanced)
+    config["VSC"] = config["VSC_PATH"] + "/VSimComposer.sh"
+    config["S2P"] = config["VSC_PATH"] + "/engine/bin/sdf2vpre"
 
     config["from_sdf"] = bool(advanced_input("Build input file from SDF file? ", "True", advanced))
 
