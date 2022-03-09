@@ -39,7 +39,6 @@ def startup_wizzard(advanced=False):
     print("vsu setup wizzard")
 
     vsc_path_default = os.environ.get("VSC_PATH")
-    print(os.environ)
     if vsc_path_default == None:
         print("Please make sure to define the VSC_PATH enviroment variable")
         exit()

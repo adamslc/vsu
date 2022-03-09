@@ -171,14 +171,17 @@ def check_patch_up_to_date(config, ext):
     if os.path.exists(patchfile):
         with open(patchfile, "r") as file:
             contents = file.read()
-            contents = "\n".join(contents.splitlines()[2:])
+            contents_cmp = "\n".join(contents.splitlines()[2:])
     else:
         contents = ""
+        contents_cmp = ""
 
     returncode, patch = compute_patch(config, ext)
-    patch = "\n".join(patch.splitlines()[2:])
+    patch_cmp = "\n".join(patch.splitlines()[2:])
 
-    if patch == contents:
+    # The *_cmp variables strip off the patch header, which contains timestamps
+    # that don't make sense to compare
+    if patch_cmp == contents_cmp:
         return
 
     print(f"WARNING: Changes to {basename}.{ext} have not been recorded in {basename}.{ext}.patch and will be lost.")
