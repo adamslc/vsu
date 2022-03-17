@@ -2,13 +2,21 @@ import os
 import hashlib
 import subprocess
 
-def make(config):
-    if config["from_sdf"]:
-        make_step(config, "pre", "sdf", generate_pre)
-    make_step(config, "ppp", "pre", generate_ppp)
-    make_step(config, "in", "ppp", generate_in)
+def make(config, txpp_args):
+    build_dir = config["build_dir"]
 
-def make_step(config, ext, parent_ext, make_func):
+    if os.path.exists(f"{build_dir}/txpp_args"):
+        os.remove(f"{build_dir}/txpp_args")
+
+    if config["from_sdf"]:
+        make_step(config, "pre", "sdf", generate_pre, None)
+    make_step(config, "ppp", "pre", generate_ppp, None)
+    make_step(config, "in", "ppp", generate_in, txpp_args)
+
+    with open(f"{build_dir}/txpp_args", "w") as file:
+        file.write(txpp_args)
+
+def make_step(config, ext, parent_ext, make_func, args):
     basename = config["basename"]
     build_dir = config["build_dir"]
 
@@ -24,12 +32,25 @@ def make_step(config, ext, parent_ext, make_func):
     if not os.path.exists(f"{build_dir}/{basename}.{ext}.generated"):
         print(f"    {basename}.{ext}.generated does not exist")
         do_make = True
+    if f"{build_dir}/{basename}.{ext}.generated" in config["hashes"]:
+        if "args" in config["hashes"][f"{build_dir}/{basename}.{ext}.generated"]:
+            if config["hashes"][f"{build_dir}/{basename}.{ext}.generated"]["args"] != args:
+                print(f"    Build args for {basename}.{ext}.generated have changed")
+                do_make = True
+        else:
+            print(f"    Args hash not recorded for {basename}.{ext}.generated")
+            do_make = True
+    else:
+        print(f"    No hashes for product {basename}.{ext}.generated")
+        do_make = True
+
 
     if do_make:
         print(f"    Generating {basename}.{ext}.generated")
-        make_func(config)
+        make_func(config, args)
         print(f"    Updating hashes")
         update_hash(config, f"{build_dir}/{basename}.{ext}.generated", f"{basename}.{parent_ext}")
+        config["hashes"][f"{build_dir}/{basename}.{ext}.generated"]["args"] = args
     else:
         print(f"    Skipping generation")
 
@@ -58,7 +79,7 @@ def clean(config):
     basename = config["basename"]
     build_dir = config["build_dir"]
 
-    cmd_str = f"rm -f {build_dir}/{basename}Vars.py {build_dir}/{basename}.pppVars.py "
+    cmd_str = f"rm -f {build_dir}/{basename}Vars.py {build_dir}/{basename}.pppVars.py {build_dir}/txpp_args "
     for ext in ["pre", "ppp", "in"]:
         check_patch_up_to_date(config, ext)
         cmd_str += f"{build_dir}/{basename}.{ext}.generated {basename}.{ext} "
@@ -73,18 +94,43 @@ def cleanall(config):
 def run(config):
     VSC = config["VSC"]
     basename = config["basename"]
+    build_dir = config["build_dir"]
     data_dir = config["data_dir"]
+
+    if os.path.exists(f"{build_dir}/txpp_args"):
+        with open(f"{build_dir}/txpp_args", "r") as file:
+            txpp_args = file.read()
+    else:
+        txpp_args = ""
+
+    txpp_args = txpp_args.replace(" ", "_")
+    txpp_args = txpp_args.replace("=", "-")
+
+    if txpp_args != "":
+        output_dir = f"{data_dir}/{txpp_args}"
+    else:
+        output_dir = data_dir
 
     options = " -nc "
     if config["start_dump"]:
         options += " -sd "
 
-    os.makedirs(data_dir, exist_ok=True)
-    run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {data_dir}/{basename} {options}", capture_output=False)
+    os.makedirs(output_dir, exist_ok=True)
+    run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {options}", capture_output=False)
 
 def update_patches(config):
     for ext in ["pre", "ppp", "in"]:
         make_patch(config, ext)
+
+def params(config):
+    build_dir = config["build_dir"]
+
+    if os.path.exists(f"{build_dir}/txpp_args"):
+        with open(f"{build_dir}/txpp_args", "r") as file:
+            args = file.read()
+            print(args)
+    else:
+        print("Something went wrong!")
 
 # Utilities
 
@@ -199,21 +245,21 @@ def check_patch_up_to_date(config, ext):
 
 # File generation
 
-def generate_pre(config):
+def generate_pre(config, args):
     VSC = config["VSC"]
     S2P = config["S2P"]
     basename = config["basename"]
     build_dir = config["build_dir"]
     run_cmd(f"source {VSC}; {S2P} -s {basename}.sdf -p {build_dir}/{basename}.pre.generated")
 
-def generate_ppp(config):
+def generate_ppp(config, args):
     VSC = config["VSC"]
     basename = config["basename"]
     build_dir = config["build_dir"]
     run_cmd(f"source {VSC}; txpp.py -S . -q -p {basename}.pre -o {build_dir}/{basename}.ppp.generated")
 
-def generate_in(config):
+def generate_in(config, txpp_args):
     VSC = config["VSC"]
     basename = config["basename"]
     build_dir = config["build_dir"]
-    run_cmd(f"source {VSC}; txpp.py -q -p {basename}.ppp -o {build_dir}/{basename}.in.generated")
+    run_cmd(f"source {VSC}; txpp.py -q -p {basename}.ppp -o {build_dir}/{basename}.in.generated {txpp_args}")

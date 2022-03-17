@@ -14,11 +14,17 @@ generated files into there. Then I symlink <basename>.sdf into the parent
 directory, and use vsu from there.
 
 Possible commands:
-1. make: creates the .in file from the .sdf or .pre basefile
+1. make: creates the .in file from the .sdf or .pre basefile. You can optionally
+   include a set of variable substitutions to be applied during the creation of
+   the .in file. These variables should be of the form 'var1=value1 var2=value2'
+   *including the quotes*.
 2. run: run the simulation using the generated .in file. This will fail if make
    hasn't been run first. By default, the output files will be written to the
-   subdirectory data.
-3. clean: remove all of the generated files.
-4. update: create or update the .patch files
-5. history: supposed to create a nice overview of the histories. Only kind of
+   subdirectory data. This command also accepts variable substitutions; see
+   make.
+3. params: show the variable substitutions that were made to generate the .in
+   file.
+4. clean: remove all of the generated files.
+5. update: create or update the .patch files
+6. history: supposed to create a nice overview of the histories. Only kind of
    works right now.
