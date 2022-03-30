@@ -14,6 +14,9 @@ def make(config, txpp_args):
     make_step(config, "in", "ppp", generate_in, txpp_args)
 
     with open(f"{build_dir}/txpp_args", "w") as file:
+        if txpp_args == None:
+            txpp_args = ""
+
         file.write(txpp_args)
 
 def make_step(config, ext, parent_ext, make_func, args):

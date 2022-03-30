@@ -14,6 +14,8 @@ def get_txpp_args():
     else:
         txpp_args = ""
 
+    return txpp_args
+
 vsu_config = config.read_config()
 if vsu_config == None:
     vsu_config = config.startup_wizzard()
