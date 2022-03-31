@@ -1,17 +1,12 @@
 import os
-import hashlib
 import subprocess
 
-def make(config, txpp_args):
+import config as cfg
+import hash
+
+def make(config):
     build_dir = config["build_dir"]
-
-    if os.path.exists(f"{build_dir}/txpp_args"):
-        os.remove(f"{build_dir}/txpp_args")
-
-    if config["from_sdf"]:
-        make_step(config, "pre", "sdf", generate_pre, None)
-    make_step(config, "ppp", "pre", generate_ppp, None)
-    make_step(config, "in", "ppp", generate_in, txpp_args)
+    txpp_args = config["txpp_args"]
 
     with open(f"{build_dir}/txpp_args", "w") as file:
         if txpp_args == None:
@@ -19,9 +14,16 @@ def make(config, txpp_args):
 
         file.write(txpp_args)
 
-def make_step(config, ext, parent_ext, make_func, args):
+    if config["from_sdf"]:
+        make_step(config, "pre", "sdf", generate_pre)
+    make_step(config, "ppp", "pre", generate_ppp)
+    make_step(config, "in", "ppp", generate_in)
+
+def make_step(config, ext, parent_ext, make_func):
     basename = config["basename"]
     build_dir = config["build_dir"]
+
+    hashes = hash.read_hashes(config)
 
     print(f"Making {basename}.{ext}...")
     print(f"  Checking if {basename}.{ext}.patch is up to date")
@@ -29,40 +31,31 @@ def make_step(config, ext, parent_ext, make_func, args):
 
     print(f"  Checking if {basename}.{ext} needs to be generated")
     do_make = False
-    if check_if_file_changed(config, f"{build_dir}/{basename}.{ext}.generated", f"{basename}.{parent_ext}"):
+    if hash.check_if_file_changed(hashes, f"{build_dir}/{basename}.{ext}.generated", f"{basename}.{parent_ext}"):
         print(f"    {basename}.{parent_ext} has changed")
         do_make = True
     if not os.path.exists(f"{build_dir}/{basename}.{ext}.generated"):
         print(f"    {basename}.{ext}.generated does not exist")
         do_make = True
-    if f"{build_dir}/{basename}.{ext}.generated" in config["hashes"]:
-        if "args" in config["hashes"][f"{build_dir}/{basename}.{ext}.generated"]:
-            if config["hashes"][f"{build_dir}/{basename}.{ext}.generated"]["args"] != args:
-                print(f"    Build args for {basename}.{ext}.generated have changed")
-                do_make = True
-        else:
-            print(f"    Args hash not recorded for {basename}.{ext}.generated")
-            do_make = True
-    else:
-        print(f"    No hashes for product {basename}.{ext}.generated")
+    if hash.check_if_file_changed(hashes, f"{build_dir}/{basename}.{ext}.generated", f"{build_dir}/txpp_args"):
+        print(f"    Build args for {basename}.{ext}.generated have changed")
         do_make = True
-
 
     if do_make:
         print(f"    Generating {basename}.{ext}.generated")
-        make_func(config, args)
+        make_func(config)
         print(f"    Updating hashes")
-        update_hash(config, f"{build_dir}/{basename}.{ext}.generated", f"{basename}.{parent_ext}")
-        config["hashes"][f"{build_dir}/{basename}.{ext}.generated"]["args"] = args
+        hash.update_hash(config, f"{build_dir}/{basename}.{ext}.generated", f"{basename}.{parent_ext}")
+        hash.update_hash(config, f"{build_dir}/{basename}.{ext}.generated", f"{build_dir}/txpp_args")
     else:
         print(f"    Skipping generation")
 
     print(f"  Checking if {basename}.{ext} needs to be patched")
     do_patch = False
-    if check_if_file_changed(config, f"{basename}.{ext}", f"{build_dir}/{basename}.{ext}.generated"):
+    if hash.check_if_file_changed(hashes, f"{basename}.{ext}", f"{build_dir}/{basename}.{ext}.generated"):
         print(f"    {basename}.{ext}.generated has changed")
         do_patch = True
-    if check_if_file_changed(config, f"{basename}.{ext}", f"{basename}.{ext}.patch"):
+    if hash.check_if_file_changed(hashes, f"{basename}.{ext}", f"{basename}.{ext}.patch"):
         print(f"    {basename}.{ext}.patch has changed")
         do_patch = True
     if not os.path.exists(f"{basename}.{ext}"):
@@ -73,10 +66,12 @@ def make_step(config, ext, parent_ext, make_func, args):
         print(f"    Patching {basename}.{ext}")
         apply_patch(config, ext)
         print(f"    Updating hashes")
-        update_hash(config, f"{basename}.{ext}", f"{build_dir}/{basename}.{ext}.generated")
-        update_hash(config, f"{basename}.{ext}", f"{basename}.{ext}.patch")
+        hash.update_hash(config, f"{basename}.{ext}", f"{build_dir}/{basename}.{ext}.generated")
+        hash.update_hash(config, f"{basename}.{ext}", f"{basename}.{ext}.patch")
     else:
         print(f"    Skipping patching")
+
+    hash.write_hashes(config, hashes)
 
 def clean(config):
     basename = config["basename"]
@@ -114,12 +109,13 @@ def run(config):
     else:
         output_dir = data_dir
 
-    options = " -nc "
-    if config["start_dump"]:
-        options += " -sd "
+    run_args = config["vorpal_args"]
 
     os.makedirs(output_dir, exist_ok=True)
-    run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {options}", capture_output=False)
+    if config["run_parallel"]:
+        run_cmd(f"source {VSC}; mpiexec -n {num_procs} vorpal -i {basename}.in -o {output_dir}/{basename} {run_args}", capture_output=False)
+    else:
+        run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {run_args}", capture_output=False)
 
 def update_patches(config):
     for ext in ["pre", "ppp", "in"]:
@@ -163,26 +159,6 @@ def run_cmd(cmd_str, allow_failure=False, capture_output=True):
 def check_cmd_output(output):
     retcode = output[0]
     stdout = output[1]
-
-def file_hash(filename):
-    if not os.path.exists(filename):
-        return ""
-
-    with open(filename, "r") as file:
-        hash = hashlib.md5(file.read().encode())
-        return hash.hexdigest()
-
-def update_hash(config, filename, parent_filename):
-    if filename not in config["hashes"]:
-        config["hashes"][filename] = {}
-
-    config["hashes"][filename][parent_filename] = file_hash(parent_filename)
-
-def check_if_file_changed(config, filename, parent_filename):
-    if (not os.path.exists(filename)) or (filename not in config["hashes"]):
-        return True
-
-    return file_hash(parent_filename) != config["hashes"][filename][parent_filename]
 
 # Patches
 
@@ -248,21 +224,22 @@ def check_patch_up_to_date(config, ext):
 
 # File generation
 
-def generate_pre(config, args):
+def generate_pre(config):
     VSC = config["VSC"]
     S2P = config["S2P"]
     basename = config["basename"]
     build_dir = config["build_dir"]
     run_cmd(f"source {VSC}; {S2P} -s {basename}.sdf -p {build_dir}/{basename}.pre.generated")
 
-def generate_ppp(config, args):
+def generate_ppp(config):
     VSC = config["VSC"]
     basename = config["basename"]
     build_dir = config["build_dir"]
     run_cmd(f"source {VSC}; txpp.py -S . -q -p {basename}.pre -o {build_dir}/{basename}.ppp.generated")
 
-def generate_in(config, txpp_args):
+def generate_in(config):
     VSC = config["VSC"]
     basename = config["basename"]
     build_dir = config["build_dir"]
+    txpp_args = config["txpp_args"]
     run_cmd(f"source {VSC}; txpp.py -q -p {basename}.ppp -o {build_dir}/{basename}.in.generated {txpp_args}")

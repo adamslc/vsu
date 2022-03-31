@@ -67,8 +67,6 @@ def startup_wizzard(advanced=False):
 
     config["start_dump"] = bool(advanced_input("Dump at the start of the simulation? ", "True", advanced))
 
-    config["hashes"] = {}
-
     write_config(config)
     return config
 
