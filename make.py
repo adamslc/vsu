@@ -38,7 +38,8 @@ def make_step(config, ext, parent_ext, make_func):
     if not os.path.exists(f"{build_dir}/{basename}.{ext}.generated"):
         print(f"    {basename}.{ext}.generated does not exist")
         do_make = True
-    if hash.check_if_file_changed(hashes, f"{build_dir}/{basename}.{ext}.generated", f"{build_dir}/txpp_args"):
+    # The ext check is a hack for now. It makes sure that updating txpp-args doesn't build more then required
+    if ext == "in" and hash.check_if_file_changed(hashes, f"{build_dir}/{basename}.{ext}.generated", f"{build_dir}/txpp_args"):
         print(f"    Build args for {basename}.{ext}.generated have changed")
         do_make = True
 
@@ -46,8 +47,8 @@ def make_step(config, ext, parent_ext, make_func):
         print(f"    Generating {basename}.{ext}.generated")
         make_func(config)
         print(f"    Updating hashes")
-        hash.update_hash(config, f"{build_dir}/{basename}.{ext}.generated", f"{basename}.{parent_ext}")
-        hash.update_hash(config, f"{build_dir}/{basename}.{ext}.generated", f"{build_dir}/txpp_args")
+        hash.update_hash(hashes, f"{build_dir}/{basename}.{ext}.generated", f"{basename}.{parent_ext}")
+        hash.update_hash(hashes, f"{build_dir}/{basename}.{ext}.generated", f"{build_dir}/txpp_args")
     else:
         print(f"    Skipping generation")
 
@@ -67,8 +68,8 @@ def make_step(config, ext, parent_ext, make_func):
         print(f"    Patching {basename}.{ext}")
         patch.apply_patch(config, ext)
         print(f"    Updating hashes")
-        hash.update_hash(config, f"{basename}.{ext}", f"{build_dir}/{basename}.{ext}.generated")
-        hash.update_hash(config, f"{basename}.{ext}", f"{basename}.{ext}.patch")
+        hash.update_hash(hashes, f"{basename}.{ext}", f"{build_dir}/{basename}.{ext}.generated")
+        hash.update_hash(hashes, f"{basename}.{ext}", f"{basename}.{ext}.patch")
     else:
         print(f"    Skipping patching")
 
