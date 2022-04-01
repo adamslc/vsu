@@ -5,6 +5,7 @@ import make
 import config
 import clean
 import history
+import patch
 
 import argparse
 
@@ -36,7 +37,7 @@ parser_params = subparsers.add_parser("params", help="Show the build parameters 
 parser_params.set_defaults(func=make.params)
 
 parser_update = subparsers.add_parser("update", help="Update .patch files to save the modifications that have been made to input files")
-parser_update.set_defaults(func=make.update_patches)
+parser_update.set_defaults(func=patch.update_patches)
 
 parser_history = subparsers.add_parser("history", help="Show a summary of the histories for a simulation; VERY BETA RIGHT NOW")
 parser_history.set_defaults(func=history.history)

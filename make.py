@@ -102,10 +102,6 @@ def run(config):
     else:
         utilities.run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {run_args}", capture_output=False)
 
-def update_patches(config):
-    for ext in ["pre", "ppp", "in"]:
-        patch.make_patch(config, ext)
-
 def params(config):
     build_dir = config["build_dir"]
 

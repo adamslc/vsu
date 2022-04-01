@@ -13,8 +13,11 @@ def make_patch(config, ext):
 
     patchfile = f"{basename}.{ext}.patch"
     if returncode == 1:
+        print(f"Updating {patchfile}")
         with open(patchfile, "w") as output:
             output.write(patch)
+    else:
+        print(f"File {basename}.{ext} has no changes from generated file")
 
 def apply_patch(config, ext):
     basename = config["basename"]
@@ -61,3 +64,7 @@ def check_patch_up_to_date(config, ext):
         return
     else:
         exit()
+
+def update_patches(config):
+    for ext in ["pre", "ppp", "in"]:
+        make_patch(config, ext)
