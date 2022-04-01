@@ -3,6 +3,7 @@ import sys
 
 import make
 import config
+import clean
 import history
 
 import argparse
@@ -26,10 +27,10 @@ parser_run.add_argument("--run-parallel", help="Run vorpal in parallel; defaults
 parser_run.set_defaults(func=make.run)
 
 parser_clean = subparsers.add_parser("clean", help="Remove all generated input files")
-parser_clean.set_defaults(func=make.clean)
+parser_clean.set_defaults(func=clean.clean)
 
 parser_cleanall = subparsers.add_parser("cleanall", help="Remove all generated input files, and hidden vsu config files; this shouldn't be needed in normal use")
-parser_cleanall.set_defaults(func=make.cleanall)
+parser_cleanall.set_defaults(func=clean.cleanall)
 
 parser_params = subparsers.add_parser("params", help="Show the build parameters that were used to create the .in file")
 parser_params.set_defaults(func=make.params)
