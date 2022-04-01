@@ -34,7 +34,7 @@ def advanced_input(prompt, default, advanced):
         return input_with_default(prompt, default)
 
 def startup_wizzard(advanced=False):
-    config = {"config_version": 1}
+    config = {"config_version": 2}
 
     print("vsu setup wizzard")
 

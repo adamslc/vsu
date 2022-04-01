@@ -2,17 +2,23 @@
 import sys
 
 import make
-import config
+import config as cfg
 import clean
 import history
 import patch
+import run
 
 import argparse
 
-vsu_config = config.read_config()
-if vsu_config == None:
-    vsu_config = config.startup_wizzard()
-    config.write_config(vsu_config)
+config = cfg.read_config()
+if config == None:
+    config = cfg.startup_wizzard()
+    cfg.write_config(config)
+
+if config["config_version"] < 2:
+    print("vsu config files are for an old version.")
+    print(f"You can typically resolve this by running rm -r {config['build_dir']}")
+    exit(1)
 
 parser = argparse.ArgumentParser(description="Utility for text-based setup in VSim")
 subparsers = parser.add_subparsers(title="Commands", metavar="<command>")
@@ -43,5 +49,5 @@ parser_history = subparsers.add_parser("history", help="Show a summary of the hi
 parser_history.set_defaults(func=history.history)
 
 args = parser.parse_args()
-vsu_config.update(vars(args))
-args.func(vsu_config)
+config.update(vars(args))
+args.func(config)
