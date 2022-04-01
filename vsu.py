@@ -31,7 +31,7 @@ parser_run = subparsers.add_parser("run", help="Create a .in file and use VSim t
 parser_run.add_argument("--txpp-args", help="Arguments to be used during the final processing step; useful for doing parameter sweeps", default="")
 parser_run.add_argument("--vorpal-args", help="Arguments to be passed to vorpal or vorpalser", default="")
 parser_run.add_argument("--run-parallel", help="Run vorpal in parallel; defaults to serial", action=argparse.BooleanOptionalAction, default=False)
-parser_run.set_defaults(func=make.run)
+parser_run.set_defaults(func=run.run)
 
 parser_clean = subparsers.add_parser("clean", help="Remove all generated input files")
 parser_clean.set_defaults(func=clean.clean)
