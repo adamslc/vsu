@@ -1,8 +1,9 @@
 import os
-import subprocess
 
+import utilities
 import config as cfg
 import hash
+import patch
 
 def make(config):
     build_dir = config["build_dir"]
@@ -27,7 +28,7 @@ def make_step(config, ext, parent_ext, make_func):
 
     print(f"Making {basename}.{ext}...")
     print(f"  Checking if {basename}.{ext}.patch is up to date")
-    check_patch_up_to_date(config, ext)
+    patch.check_patch_up_to_date(config, ext)
 
     print(f"  Checking if {basename}.{ext} needs to be generated")
     do_make = False
@@ -64,7 +65,7 @@ def make_step(config, ext, parent_ext, make_func):
 
     if do_patch:
         print(f"    Patching {basename}.{ext}")
-        apply_patch(config, ext)
+        patch.apply_patch(config, ext)
         print(f"    Updating hashes")
         hash.update_hash(config, f"{basename}.{ext}", f"{build_dir}/{basename}.{ext}.generated")
         hash.update_hash(config, f"{basename}.{ext}", f"{basename}.{ext}.patch")
@@ -79,15 +80,15 @@ def clean(config):
 
     cmd_str = f"rm -f {build_dir}/{basename}Vars.py {build_dir}/{basename}.pppVars.py {build_dir}/txpp_args "
     for ext in ["pre", "ppp", "in"]:
-        check_patch_up_to_date(config, ext)
+        patch.check_patch_up_to_date(config, ext)
         cmd_str += f"{build_dir}/{basename}.{ext}.generated {basename}.{ext} "
 
-    run_cmd(cmd_str)
+    utilities.run_cmd(cmd_str)
 
 def cleanall(config):
     build_dir = config["build_dir"]
     clean(config)
-    run_cmd(f"rm -r {build_dir}")
+    utilities.run_cmd(f"rm -r {build_dir}")
 
 def run(config):
     VSC = config["VSC"]
@@ -113,13 +114,13 @@ def run(config):
 
     os.makedirs(output_dir, exist_ok=True)
     if config["run_parallel"]:
-        run_cmd(f"source {VSC}; mpiexec -n {num_procs} vorpal -i {basename}.in -o {output_dir}/{basename} {run_args}", capture_output=False)
+        utilities.run_cmd(f"source {VSC}; mpiexec -n {num_procs} vorpal -i {basename}.in -o {output_dir}/{basename} {run_args}", capture_output=False)
     else:
-        run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {run_args}", capture_output=False)
+        utilities.run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {run_args}", capture_output=False)
 
 def update_patches(config):
     for ext in ["pre", "ppp", "in"]:
-        make_patch(config, ext)
+        patch.make_patch(config, ext)
 
 def params(config):
     build_dir = config["build_dir"]
@@ -131,97 +132,6 @@ def params(config):
     else:
         print("Something went wrong!")
 
-# Utilities
-
-def run_cmd(cmd_str, allow_failure=False, capture_output=True):
-    output = subprocess.run(cmd_str, shell=True, capture_output=capture_output)
-    if output.returncode != 0 and not allow_failure:
-        if capture_output:
-            stdout = output.stdout.decode()
-            stderr = output.stderr.decode()
-
-            print(f"ERROR [{output.returncode}]")
-            print("===== STDOUT =====")
-            for line in stdout.splitlines():
-                print("  ", line)
-
-            print("===== STDERR =====")
-            for line in stderr.splitlines():
-                print("  ", line)
-
-        exit(output.returncode)
-
-    if capture_output:
-        return (output.returncode, output.stdout.decode())
-    else:
-        return (output.returncode, "")
-
-def check_cmd_output(output):
-    retcode = output[0]
-    stdout = output[1]
-
-# Patches
-
-def compute_patch(config, ext):
-    basename = config["basename"]
-    build_dir = config["build_dir"]
-    return run_cmd(f"diff -U3 {build_dir}/{basename}.{ext}.generated {basename}.{ext}", allow_failure=True)
-
-def make_patch(config, ext):
-    basename = config["basename"]
-    returncode, patch = compute_patch(config, ext)
-
-    patchfile = f"{basename}.{ext}.patch"
-    if returncode == 1:
-        with open(patchfile, "w") as output:
-            output.write(patch)
-
-def apply_patch(config, ext):
-    basename = config["basename"]
-    build_dir = config["build_dir"]
-    cmd_str = f"cp {build_dir}/{basename}.{ext}.generated {basename}.{ext}"
-    if os.path.exists(f"{basename}.{ext}.patch"):
-        cmd_str += f"; patch < {basename}.{ext}.patch"
-    run_cmd(cmd_str)
-
-def check_patch_up_to_date(config, ext):
-    basename = config["basename"]
-    build_dir = config["build_dir"]
-
-    if ((not os.path.exists(f"{build_dir}/{basename}.{ext}.generated")) or
-            (not os.path.exists(f"{basename}.{ext}"))):
-        return
-
-    patchfile = f"{basename}.{ext}.patch"
-    if os.path.exists(patchfile):
-        with open(patchfile, "r") as file:
-            contents = file.read()
-            contents_cmp = "\n".join(contents.splitlines()[2:])
-    else:
-        contents = ""
-        contents_cmp = ""
-
-    returncode, patch = compute_patch(config, ext)
-    patch_cmp = "\n".join(patch.splitlines()[2:])
-
-    # The *_cmp variables strip off the patch header, which contains timestamps
-    # that don't make sense to compare
-    if patch_cmp == contents_cmp:
-        return
-
-    print(f"WARNING: Changes to {basename}.{ext} have not been recorded in {basename}.{ext}.patch and will be lost.")
-    usr_in = input(f"Would you like to update {basename}.{ext}.patch first ([y]es/[n]o/[Q]uit)? ")
-
-    if usr_in.lower() == "y":
-        print(f"Writing updated patch file {basename}.{ext}.patch")
-        with open(patchfile, "w") as file:
-            file.write(patch)
-        return
-    elif usr_in.lower() == "n":
-        return
-    else:
-        exit()
-
 # File generation
 
 def generate_pre(config):
@@ -229,17 +139,17 @@ def generate_pre(config):
     S2P = config["S2P"]
     basename = config["basename"]
     build_dir = config["build_dir"]
-    run_cmd(f"source {VSC}; {S2P} -s {basename}.sdf -p {build_dir}/{basename}.pre.generated")
+    utilities.run_cmd(f"source {VSC}; {S2P} -s {basename}.sdf -p {build_dir}/{basename}.pre.generated")
 
 def generate_ppp(config):
     VSC = config["VSC"]
     basename = config["basename"]
     build_dir = config["build_dir"]
-    run_cmd(f"source {VSC}; txpp.py -S . -q -p {basename}.pre -o {build_dir}/{basename}.ppp.generated")
+    utilities.run_cmd(f"source {VSC}; txpp.py -S . -q -p {basename}.pre -o {build_dir}/{basename}.ppp.generated")
 
 def generate_in(config):
     VSC = config["VSC"]
     basename = config["basename"]
     build_dir = config["build_dir"]
     txpp_args = config["txpp_args"]
-    run_cmd(f"source {VSC}; txpp.py -q -p {basename}.ppp -o {build_dir}/{basename}.in.generated {txpp_args}")
+    utilities.run_cmd(f"source {VSC}; txpp.py -q -p {basename}.ppp -o {build_dir}/{basename}.in.generated {txpp_args}")
