@@ -30,6 +30,7 @@ def run(config):
 
     copy_runfiles(config, output_dir)
 
+    print("Running simulation...", flush=True)
     if config["run_parallel"]:
         num_procs = 8
         utilities.run_cmd(f"source {VSC}; mpiexec -n {num_procs} vorpal -i {basename}.in -o {output_dir}/{basename} {run_args}", capture_output=False)
