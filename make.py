@@ -26,7 +26,7 @@ def make_step(config, ext, parent_ext, make_func):
 
     hashes = hash.read_hashes(config)
 
-    print(f"Making {basename}.{ext}...")
+    print(f"Making {basename}.{ext}...", flush=True)
     print(f"  Checking if {basename}.{ext}.patch is up to date")
     patch.check_patch_up_to_date(config, ext)
 
