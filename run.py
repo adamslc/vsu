@@ -23,6 +23,9 @@ def run(config):
 
     run_args = config["vorpal_args"]
 
+    if "license_path" in config:
+        run_args += " --license-path " + config["license_path"]
+
     os.makedirs(output_dir, exist_ok=True)
 
     copy_runfiles(config, output_dir)
