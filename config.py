@@ -33,6 +33,14 @@ def advanced_input(prompt, default, advanced):
     else:
         return input_with_default(prompt, default)
 
+def find_exec_path(vsc_path, exec_name):
+    if os.path.exists(vsc_path + "/engine/bin/" + exec_name):
+        return vsc_path + "/engine/bin/" + exec_name
+    elif os.path.exists(vsc_path + "/Contents/engine/bin/" + exec_name):
+        return vsc_path + "/Contents/engine/bin/" + exec_name
+    else:
+        return ""
+
 def startup_wizzard(advanced=False):
     config = {"config_version": 2}
 
@@ -40,8 +48,9 @@ def startup_wizzard(advanced=False):
 
     vsc_path_default = os.environ.get("VSC_PATH")
     if vsc_path_default == None:
-        print("Please make sure to define the VSC_PATH enviroment variable")
+        print("Consider defining the VSC_PATH enviroment variable")
         exit()
+    config["VSC_PATH"] = input_with_default("VSimComposer.sh directory: ", vsc_path_default)
 
     basenames = find_basenames()
     if len(basenames) == 1:
@@ -59,9 +68,8 @@ def startup_wizzard(advanced=False):
     config["data_dir"] = advanced_input("Enter data directory: ", "data", advanced)
     config["build_dir"] = advanced_input("Enter build directory: ", ".vsu", advanced)
 
-    config["VSC_PATH"] = advanced_input("VSimComposer.sh directory: ", vsc_path_default, advanced)
     config["VSC"] = config["VSC_PATH"] + "/VSimComposer.sh"
-    config["S2P"] = config["VSC_PATH"] + "/engine/bin/sdf2vpre"
+    config["S2P"] = find_exec_path(config["VSC_PATH"], "sdf2vpre")
 
     config["from_sdf"] = bool(advanced_input("Build input file from SDF file? ", "True", advanced))
 
