@@ -17,7 +17,10 @@ def run(config):
     txpp_args = txpp_args.replace("=", "-")
 
     if txpp_args != "":
-        output_dir = f"{data_dir}/{txpp_args}"
+        if config["output_dir_override"] == "":
+            output_dir = f"{data_dir}/{txpp_args}"
+        else:
+            output_dir = f"{data_dir}/{config['output_dir_override']}"
     else:
         output_dir = data_dir
 
