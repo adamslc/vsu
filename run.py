@@ -45,5 +45,8 @@ def copy_runfiles(config, output_dir):
     build_dir = config["build_dir"]
 
     for ext in ["pre", "ppp", "in"]:
-        shutil.copyfile(f"{build_dir}/{basename}.{ext}.generated", f"{output_dir}/{basename}.{ext}.generated")
-        shutil.copyfile(f"{basename}.{ext}", f"{output_dir}/{basename}.{ext}")
+        if not (config["from_sdf"] == False and ext == "pre"):
+            shutil.copyfile(f"{build_dir}/{basename}.{ext}.generated", f"{output_dir}/{basename}.{ext}.generated")
+
+        if not (config["from_sdf"] == False and ext == "sdf"):
+            shutil.copyfile(f"{basename}.{ext}", f"{output_dir}/{basename}.{ext}")

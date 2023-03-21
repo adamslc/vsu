@@ -8,7 +8,8 @@ def clean(config):
     cmd_str = f"rm -f {build_dir}/{basename}Vars.py {build_dir}/{basename}.pppVars.py {build_dir}/txpp_args "
     for ext in ["pre", "ppp", "in"]:
         patch.check_patch_up_to_date(config, ext)
-        cmd_str += f"{build_dir}/{basename}.{ext}.generated {basename}.{ext} "
+        if not (config["from_sdf"] == False and ext == "pre"):
+            cmd_str += f"{build_dir}/{basename}.{ext}.generated {basename}.{ext} "
 
     utilities.run_cmd(cmd_str)
 
