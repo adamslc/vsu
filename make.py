@@ -85,6 +85,18 @@ def params(config):
     else:
         print("Something went wrong!")
 
+def get_params_str(config):
+    build_dir = config["build_dir"]
+
+    assert os.path.exists(f"{build_dir}/txpp_args")
+
+    with open(f"{build_dir}/txpp_args", "r") as file:
+        args = file.read()
+        args = args.replace(" ", "_")
+        args = args.replace("=", "-")
+
+    return args
+
 # File generation
 
 def generate_pre(config):
