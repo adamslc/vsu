@@ -32,6 +32,7 @@ def run(config):
     os.makedirs(output_dir, exist_ok=True)
 
     copy_runfiles(config, output_dir)
+    record_commit_hash(config, output_dir)
 
     if config['restart_simulation'] == -1:
         restart_dump = find_last_dump(config, output_dir)
@@ -49,6 +50,21 @@ def run(config):
         utilities.run_cmd(f"source {VSC}; mpiexec -n {num_procs} vorpal -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", capture_output=False)
     else:
         utilities.run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", capture_output=False)
+
+
+def record_commit_hash(config, output_dir):
+    if config['no_git_hash']:
+        return
+
+    status_str = utilities.run_cmd('git status --procelain')
+    if status_str != '':
+        print('Git repo is not clean, aborting simulation. You can force this to be ignored by passing --no-git-hash.')
+        print(status_str)
+        return
+
+    commit_hash = utilities.run_cmd('git rev-parse HEAD')
+    with open(f'{output_dir}/COMMIT', 'w') as file:
+        file.write(commit_hash)
 
 
 def copy_runfiles(config, output_dir):
