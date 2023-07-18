@@ -4,12 +4,12 @@ import shutil
 import utilities
 import make
 
+
 def run(config):
     make.make(config)
 
     VSC = config["VSC"]
     basename = config["basename"]
-    build_dir = config["build_dir"]
     data_dir = config["data_dir"]
 
     txpp_args = config["txpp_args"]
@@ -43,13 +43,13 @@ def run(config):
     else:
         restart_str = ' '
 
-
     print("Running simulation...", flush=True)
     if config["run_parallel"]:
         num_procs = 8
         utilities.run_cmd(f"source {VSC}; mpiexec -n {num_procs} vorpal -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", capture_output=False)
     else:
         utilities.run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", capture_output=False)
+
 
 def copy_runfiles(config, output_dir):
     basename = config["basename"]
@@ -61,6 +61,10 @@ def copy_runfiles(config, output_dir):
 
         if not (config["from_sdf"] == False and ext == "sdf"):
             shutil.copyfile(f"{basename}.{ext}", f"{output_dir}/{basename}.{ext}")
+
+    shutil.copyfile(f"{build_dir}/{basename}Vars.py", f"{output_dir}/{basename}Vars.py")
+    shutil.copyfile(f"{build_dir}/{basename}.pppVars.py", f"{output_dir}/{basename}.pppVars.py")
+
 
 def find_last_dump(config, output_dir):
     files = os.listdir(output_dir)
