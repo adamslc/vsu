@@ -56,7 +56,7 @@ def record_commit_hash(config, output_dir):
     if config['no_git_hash']:
         return
 
-    status_str = utilities.run_cmd('git status --procelain')
+    status_str = utilities.run_cmd('git status --porcelain')
     if status_str != '':
         print('Git repo is not clean, aborting simulation. You can force this to be ignored by passing --no-git-hash.')
         print(status_str)
