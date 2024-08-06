@@ -34,7 +34,7 @@ parser_run.add_argument("--vorpal-args", help="Arguments to be passed to vorpal 
 parser_run.add_argument("--run-parallel", help="Run vorpal in parallel; defaults to serial", action=argparse.BooleanOptionalAction, default=False)
 # Set to -2 if simulation should not be restart, and -1 if it should be restart from the last dump
 parser_run.add_argument("--restart", help="If a dump number is provided, restart the simulation from that dump. Otherwise, restart from the most recent dump", default=-2, const=-1, nargs='?', type=int, dest='restart_simulation')
-parser_run.add_argument("--no-git-hash", help="Does not check that the git repository is clean, or store the git hash in the data output directory", action=argparse.BooleanOptionalAction, default=False)
+parser_run.add_argument("--git-hash", help="Checks that the git repository is clean, or store the git hash in the data output directory", action=argparse.BooleanOptionalAction, default=True)
 parser_run.set_defaults(func=run.run)
 
 parser_clean = subparsers.add_parser("clean", help="Remove all generated input files")

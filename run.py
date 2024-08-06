@@ -24,8 +24,10 @@ def run(config):
     else:
         output_dir = data_dir
 
-    run_args = config["vorpal_args"]
+    check_if_git_dirty(config, output_dir)
+    os.makedirs(output_dir, exist_ok=True)
 
+    run_args = config["vorpal_args"]
     if "license_path" in config:
         run_args += " --license-path " + config["license_path"]
 
@@ -52,17 +54,21 @@ def run(config):
         utilities.run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", capture_output=False)
 
 
-def record_commit_hash(config, output_dir):
-    if config['no_git_hash']:
+def check_if_git_dirty(config, output_dir):
+    if not config['git_hash']:
         return
 
-    status_str = utilities.run_cmd('git status --porcelain')
+    ret_code, status_str = utilities.run_cmd('git status --porcelain')
     if status_str != '':
         print('Git repo is not clean, aborting simulation. You can force this to be ignored by passing --no-git-hash.')
         print(status_str)
+        exit(1)
+
+def record_commit_hash(config, output_dir):
+    if not config['git_hash']:
         return
 
-    commit_hash = utilities.run_cmd('git rev-parse HEAD')
+    ret_code, commit_hash = utilities.run_cmd('git rev-parse HEAD')
     with open(f'{output_dir}/COMMIT', 'w') as file:
         file.write(commit_hash)
 
