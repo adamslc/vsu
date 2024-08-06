@@ -31,7 +31,8 @@ def run(config):
     if "license_path" in config:
         run_args += " --license-path " + config["license_path"]
 
-    os.makedirs(output_dir, exist_ok=True)
+    if config["start_dump"]:
+        run_args += " -sd"
 
     copy_runfiles(config, output_dir)
     record_commit_hash(config, output_dir)
