@@ -5,7 +5,7 @@ import utilities
 def compute_patch(config, ext):
     basename = config["basename"]
     build_dir = config["build_dir"]
-    return utilities.run_cmd(f"diff -U3 {build_dir}/{basename}.{ext}.generated {basename}.{ext}", allow_failure=True)
+    return utilities.run_cmd(f"diff -U3 --label generated --label modified {build_dir}/{basename}.{ext}.generated {basename}.{ext}", allow_failure=True)
 
 def make_patch(config, ext):
     basename = config["basename"]
