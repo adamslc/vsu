@@ -7,15 +7,17 @@ from rich import print
 import make
 
 def createTimeseries(timeSeries):
-    if timeSeries["vsKind"] != b"uniform":
-        print("Nonuniform timeseries are not supported")
-        exit()
+    if timeSeries.attrs["vsKind"] == b"uniform":
+        lowerBound = timeSeries.attrs["vsLowerBounds"][0]
+        upperBound = timeSeries.attrs["vsUpperBounds"][0]
+        numCells = timeSeries.attrs["vsNumCells"][0]
 
-    lowerBound = timeSeries["vsLowerBounds"][0]
-    upperBound = timeSeries["vsUpperBounds"][0]
-    numCells = timeSeries["vsNumCells"][0]
-
-    return np.linspace(lowerBound, upperBound, numCells + 1), lowerBound, upperBound
+        return np.linspace(lowerBound, upperBound, numCells + 1), lowerBound, upperBound
+    elif timeSeries.attrs["vsKind"] == b"rectilinear":
+        return timeSeries["time"][:], timeSeries["time"][0], timeSeries["time"][-1]
+    else:
+        print("Unrecgonized timeseries format")
+        exit(1)
 
 def createTimeseriesLabels(ts, lower_time, upper_time, N=4):
     if upper_time < 1e-12:
@@ -57,7 +59,7 @@ def history(config):
 
     file = h5py.File(f"{data_dir}/{txpp_args}/{basename}_History.h5")
 
-    timeseries, lower_time, upper_time = createTimeseries(file["timeSeries"].attrs)
+    timeseries, lower_time, upper_time = createTimeseries(file["timeSeries"])
     ts_ticks, ts_labels = createTimeseriesLabels(timeseries, lower_time, upper_time)
 
     datasets = list(file.keys())
