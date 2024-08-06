@@ -7,6 +7,7 @@ import clean
 import history
 import patch
 import run
+import cmd
 
 import argparse
 
@@ -36,6 +37,10 @@ parser_run.add_argument("--run-parallel", help="Run vorpal in parallel; defaults
 parser_run.add_argument("--restart", help="If a dump number is provided, restart the simulation from that dump. Otherwise, restart from the most recent dump", default=-2, const=-1, nargs='?', type=int, dest='restart_simulation')
 parser_run.add_argument("--git-hash", help="Checks that the git repository is clean, or store the git hash in the data output directory", action=argparse.BooleanOptionalAction, default=True)
 parser_run.set_defaults(func=run.run)
+
+parser_cmd = subparsers.add_parser("cmd", help="Run a shell command in a shell that has sourced the VSim config script")
+parser_cmd.add_argument("command", help="The command to be run")
+parser_cmd.set_defaults(func=cmd.cmd)
 
 parser_clean = subparsers.add_parser("clean", help="Remove all generated input files")
 parser_clean.set_defaults(func=clean.clean)
