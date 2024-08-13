@@ -14,7 +14,6 @@ def run(config):
 
     txpp_args = config["txpp_args"]
     txpp_args = txpp_args.replace(" ", "_")
-    txpp_args = txpp_args.replace("=", "-")
 
     if txpp_args != "":
         if config["output_dir_override"] == "":
