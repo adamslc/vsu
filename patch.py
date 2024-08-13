@@ -5,7 +5,9 @@ import utilities
 def compute_patch(config, ext):
     basename = config["basename"]
     build_dir = config["build_dir"]
-    return utilities.run_cmd(f"diff -U3 --label generated --label modified {build_dir}/{basename}.{ext}.generated {basename}.{ext}", allow_failure=True)
+    gen_filename = f"{build_dir}/{basename}.{ext}.generated"
+    target_filename = f"{basename}.{ext}"
+    return utilities.run_cmd(f"diff -U3 --label {gen_filename} --label {target_filename} {gen_filename} {target_filename}", allow_failure=True)
 
 def make_patch(config, ext):
     basename = config["basename"]
@@ -24,7 +26,7 @@ def apply_patch(config, ext):
     build_dir = config["build_dir"]
     cmd_str = f"cp {build_dir}/{basename}.{ext}.generated {basename}.{ext}"
     if os.path.exists(f"{basename}.{ext}.patch"):
-        cmd_str += f"; patch < {basename}.{ext}.patch"
+        cmd_str += f"; patch --batch --input {basename}.{ext}.patch"
     utilities.run_cmd(cmd_str)
 
 def check_patch_up_to_date(config, ext):
