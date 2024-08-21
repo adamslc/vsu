@@ -93,7 +93,7 @@ def get_params_str(config):
     with open(f"{build_dir}/txpp_args", "r") as file:
         args = file.read()
         args = args.replace(" ", "_")
-        args = args.replace("=", "-")
+        # args = args.replace("=", "-")
 
     return args
 
