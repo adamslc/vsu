@@ -33,18 +33,26 @@ def run(config):
     if config["start_dump"]:
         run_args += " -sd"
 
-    copy_runfiles(config, output_dir)
-    record_commit_hash(config, output_dir)
-
     if config['restart_simulation'] == -1:
         restart_dump = find_last_dump(config, output_dir)
     elif config['restart_simulation'] > 0:
         restart_dump = config['restart_simulation']
 
     if config['restart_simulation'] >= -1:
+        if not config["restart_mismatch"]:
+            # Check that the stored and newly generated input files match
+            retcode, output = utilities.run_cmd(f"diff {output_dir}/{basename}.in {basename}.in")
+
+            if retcode != 0:
+                print('The stored and newly generated .in files do not match. Aborting the restart simulation. You can override this check by passing --restart-mismatch')
+                exit(1)
+
         restart_str = f'-r {restart_dump}'
     else:
         restart_str = ' '
+
+    copy_runfiles(config, output_dir)
+    record_commit_hash(config, output_dir)
 
     log_file_name = f"{output_dir}/LOG"
     utilities.touch(log_file_name)
