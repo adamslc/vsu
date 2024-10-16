@@ -29,6 +29,7 @@ parser_make.add_argument("--txpp-args", help="Arguments to be used during the fi
 parser_make.set_defaults(func=make.make)
 
 parser_run = subparsers.add_parser("run", help="Create a .in file and use VSim to run the simulation")
+parser_run.add_argument("--echo", help="Sets if the simulation output will be echoed to stdout in addtion to be written to LOG", action=argparse.BooleanOptionalAction, default=False)
 parser_run.add_argument("--txpp-args", help="Arguments to be used during the final processing step; useful for doing parameter sweeps", default="")
 parser_run.add_argument("--output-dir-override", help="Override where VSim writes output (defaults to --txpp-args)", default="")
 parser_run.add_argument("--vorpal-args", help="Arguments to be passed to vorpal or vorpalser", default="")

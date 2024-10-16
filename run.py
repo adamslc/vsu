@@ -46,12 +46,16 @@ def run(config):
     else:
         restart_str = ' '
 
+    log_file_name = f"{output_dir}/LOG"
+    utilities.touch(log_file_name)
+    utilities.force_symlink(log_file_name, "LOG")
+
     print("Running simulation...", flush=True)
     if config["run_parallel"]:
         num_procs = 8
-        utilities.run_cmd(f"source {VSC}; mpiexec -n {num_procs} vorpal -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", capture_output=False)
+        utilities.run_cmd_with_logging(f"source {VSC}; mpiexec -n {num_procs} vorpal -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", log_file_name, echo_to_stdout=config['echo'])
     else:
-        utilities.run_cmd(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", capture_output=False)
+        utilities.run_cmd_with_logging(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", log_file_name, echo_to_stdout=config['echo'])
 
 
 def check_if_git_dirty(config, output_dir):
