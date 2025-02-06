@@ -6,8 +6,6 @@ import make
 
 
 def run(config):
-    make.make(config)
-
     VSC = config["VSC"]
     basename = config["basename"]
     data_dir = config["data_dir"]
@@ -25,6 +23,10 @@ def run(config):
 
     check_if_git_dirty(config, output_dir)
     os.makedirs(output_dir, exist_ok=True)
+
+    config['prefix_dir'] = output_dir
+    config['build_dir'] = '.'
+    make.make(config)
 
     run_args = config["vorpal_args"]
     if "license_path" in config:
@@ -51,20 +53,26 @@ def run(config):
     else:
         restart_str = ' '
 
-    copy_runfiles(config, output_dir)
+    # copy_runfiles(config, output_dir)
     record_commit_hash(config, output_dir)
 
-    log_file_name = f"{output_dir}/LOG"
-    utilities.touch(log_file_name)
-    utilities.force_symlink(log_file_name, "LOG")
 
-    print("Running simulation...", flush=True)
     if config["run_parallel"]:
         num_procs = 8
-        utilities.run_cmd_with_logging(f"source {VSC}; mpiexec -n {num_procs} vorpal -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", log_file_name, echo_to_stdout=config['echo'])
+        cmd = f"source {VSC}; mpiexec -n {num_procs} vorpal -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
     else:
-        utilities.run_cmd_with_logging(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}", log_file_name, echo_to_stdout=config['echo'])
+        cmd = f"source {VSC}; vorpalser -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
 
+    if config['write_script']:
+        with open(f"{output_dir}/run.sh", 'w') as file:
+            file.write(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}")
+    else:
+        log_file_name = f"{output_dir}/LOG"
+        utilities.touch(log_file_name)
+        utilities.force_symlink(log_file_name, "LOG")
+
+        print("Running simulation...", flush=True)
+        utilities.run_cmd_with_logging(cmd, log_file_name, echo_to_stdout=config['echo'])
 
 def check_if_git_dirty(config, output_dir):
     if not config['git_hash']:

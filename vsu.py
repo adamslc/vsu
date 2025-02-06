@@ -38,6 +38,7 @@ parser_run.add_argument("--run-parallel", help="Run vorpal in parallel; defaults
 parser_run.add_argument("--restart", help="If a dump number is provided, restart the simulation from that dump. Otherwise, restart from the most recent dump", default=-2, const=-1, nargs='?', type=int, dest='restart_simulation')
 parser_run.add_argument("--restart-mismatch", help="Allows a simulation to be restarted with a different input file than was used in the initial run", action=argparse.BooleanOptionalAction, default=False)
 parser_run.add_argument("--git-hash", help="Checks that the git repository is clean, or store the git hash in the data output directory", action=argparse.BooleanOptionalAction, default=True)
+parser_run.add_argument("--write-script", help="Write shell script to run simulation, instead of actually running the simulation.", action=argparse.BooleanOptionalAction, default=False)
 parser_run.set_defaults(func=run.run)
 
 parser_cmd = subparsers.add_parser("cmd", help="Run a shell command in a shell that has sourced the VSim config script")

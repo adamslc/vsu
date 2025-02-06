@@ -24,8 +24,10 @@ def make_patch(config, ext):
 def apply_patch(config, ext):
     basename = config["basename"]
     build_dir = config["build_dir"]
-    cmd_str = f"cp {build_dir}/{basename}.{ext}.generated {basename}.{ext}"
+    prefix_dir = config["prefix_dir"]
+    cmd_str = f"cp {prefix_dir}/{build_dir}/{basename}.{ext}.generated {prefix_dir}/{basename}.{ext}"
     if os.path.exists(f"{basename}.{ext}.patch"):
+        cmd_str += f"; cd {prefix_dir}"
         cmd_str += f"; patch --batch --input {basename}.{ext}.patch"
     utilities.run_cmd(cmd_str)
 

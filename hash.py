@@ -18,14 +18,15 @@ def update_hash(hashes, filename, parent_filename):
 
 def read_hashes(config):
     build_dir = config["build_dir"]
+    prefix_dir = config["prefix_dir"]
 
-    if not os.path.isdir(build_dir):
+    if not os.path.isdir(f'{prefix_dir}/{build_dir}'):
         return {}
 
-    if not os.path.isfile(f"{build_dir}/hashes.yaml"):
+    if not os.path.isfile(f"{prefix_dir}/{build_dir}/hashes.yaml"):
         return {}
 
-    with open(f"{build_dir}/hashes.yaml", "r") as file:
+    with open(f"{prefix_dir}/{build_dir}/hashes.yaml", "r") as file:
         hashes = yaml.load(file, Loader=yaml.Loader)
 
     if hashes == None:
@@ -35,15 +36,16 @@ def read_hashes(config):
 
 def write_hashes(config, hashes):
     build_dir = config["build_dir"]
+    prefix_dir = config["prefix_dir"]
 
-    if not os.path.isdir(build_dir):
-        os.mkdir(build_dir)
+    if not os.path.isdir(f'{prefix_dir}/{build_dir}'):
+        os.mkdir(f'{prefix_dir}/{build_dir}')
 
-    with open(f"{build_dir}/hashes.yaml", "w") as file:
+    with open(f"{prefix_dir}/{build_dir}/hashes.yaml", "w") as file:
         file.write(yaml.dump(hashes))
 
 def check_if_file_changed(hashes, filename, parent_filename):
-    if (not os.path.exists(filename)) or (filename not in hashes):
+    if (not os.path.exists(filename)) or (filename not in hashes) or (parent_filename not in hashes[filename]):
         return True
 
     return file_hash(parent_filename) != hashes[filename][parent_filename]
