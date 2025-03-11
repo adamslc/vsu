@@ -47,6 +47,9 @@ def make_step(config, ext, parent_ext, make_func):
 
     hashes = hash.read_hashes(config)
 
+    if "force_make" not in config:
+        config["force_make"] = False
+
     print(f"Making {prefix_dir}/{basename}.{ext}...")
     if prefix_dir == ".":
         print(f"  Checking if {basename}.{ext}.patch is up to date")
@@ -55,7 +58,7 @@ def make_step(config, ext, parent_ext, make_func):
         print(f"  Making at {prefix_dir}, so skipping patch check")
 
     print(f"  Checking if {prefix_dir}/{basename}.{ext} needs to be generated")
-    do_make = False
+    do_make = config["force_make"]
     if hash.check_if_file_changed(hashes, f"{prefix_dir}/{build_dir}/{basename}.{ext}.generated", f"{prefix_dir}/{basename}.{parent_ext}"):
         print(f"    {prefix_dir}/{basename}.{parent_ext} has changed")
         do_make = True
@@ -77,7 +80,7 @@ def make_step(config, ext, parent_ext, make_func):
         print(f"    Skipping generation")
 
     print(f"  Checking if {prefix_dir}/{basename}.{ext} needs to be patched")
-    do_patch = False
+    do_patch = config["force_make"]
     if hash.check_if_file_changed(hashes, f"{prefix_dir}/{basename}.{ext}", f"{prefix_dir}/{build_dir}/{basename}.{ext}.generated"):
         print(f"    {prefix_dir}/{build_dir}/{basename}.{ext}.generated has changed")
         do_patch = True
@@ -92,6 +95,9 @@ def make_step(config, ext, parent_ext, make_func):
         print(f"    Patching {prefix_dir}/{basename}.{ext}")
         patch.apply_patch(config, ext)
         print(f"    Updating hashes")
+        print(f"      {prefix_dir}/{build_dir}/{basename}.{ext}.generated")
+        print(f"      {prefix_dir}/{basename}.{ext}.patch")
+
         hash.update_hash(hashes, f"{prefix_dir}/{basename}.{ext}", f"{prefix_dir}/{build_dir}/{basename}.{ext}.generated")
         hash.update_hash(hashes, f"{prefix_dir}/{basename}.{ext}", f"{prefix_dir}/{basename}.{ext}.patch")
     else:

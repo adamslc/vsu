@@ -26,6 +26,7 @@ def run(config):
 
     config['prefix_dir'] = output_dir
     config['build_dir'] = '.'
+    config['force_make'] = True
     make.make(config)
 
     run_args = config["vorpal_args"]
