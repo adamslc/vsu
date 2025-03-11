@@ -44,7 +44,7 @@ def run(config):
     if config['restart_simulation'] >= -1:
         if not config["restart_mismatch"]:
             # Check that the stored and newly generated input files match
-            retcode, output = utilities.run_cmd(f"diff {output_dir}/{basename}.in {basename}.in")
+            retcode, output = utilities.run_cmd(f"diff {output_dir}/{basename}.in {basename}.in", allow_failure=True, capture_output=True)
 
             if retcode != 0:
                 print('The stored and newly generated .in files do not match. Aborting the restart simulation. You can override this check by passing --restart-mismatch')
@@ -59,8 +59,13 @@ def run(config):
 
 
     if config["run_parallel"]:
-        num_procs = 8
-        cmd = f"source {VSC}; mpiexec -n {num_procs} vorpal -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
+        num_procs = config["num_procs"]
+        if num_procs == 0:
+            procs_str = ""
+        else:
+            procs_str = f"-n {num_procs}"
+
+        cmd = f"source {VSC}; mpiexec {procs_str} vorpal -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
     else:
         cmd = f"source {VSC}; vorpalser -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
 

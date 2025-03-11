@@ -34,6 +34,7 @@ parser_run.add_argument("--txpp-args", help="Arguments to be used during the fin
 parser_run.add_argument("--output-dir-override", help="Override where VSim writes output (defaults to --txpp-args)", default="")
 parser_run.add_argument("--vorpal-args", help="Arguments to be passed to vorpal or vorpalser", default="")
 parser_run.add_argument("--run-parallel", help="Run vorpal in parallel; defaults to serial", action=argparse.BooleanOptionalAction, default=False)
+parser_run.add_argument("--num-procs", help="Number of processors to use when running in parallel", default=0, type=int)
 # Set to -2 if simulation should not be restart, and -1 if it should be restart from the last dump
 parser_run.add_argument("--restart", help="If a dump number is provided, restart the simulation from that dump. Otherwise, restart from the most recent dump", default=-2, const=-1, nargs='?', type=int, dest='restart_simulation')
 parser_run.add_argument("--restart-mismatch", help="Allows a simulation to be restarted with a different input file than was used in the initial run", action=argparse.BooleanOptionalAction, default=False)
