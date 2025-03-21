@@ -54,6 +54,7 @@ def run(config):
     else:
         restart_str = ' '
 
+    # Unneeded now because input files are being built in the output directory
     # copy_runfiles(config, output_dir)
     record_commit_hash(config, output_dir)
 

@@ -16,8 +16,10 @@ def make(config):
 
     if prefix_dir != ".":
         if config["from_sdf"]:
+            rotate_file(config, f"{prefix_dir}/{basename}.sdf")
             utilities.run_cmd(f"cp {basename}.sdf {prefix_dir}")
         else:
+            rotate_file(config, f"{prefix_dir}/{basename}.pre")
             utilities.run_cmd(f"cp {basename}.pre {prefix_dir}")
 
         if os.path.exists(f"{basename}.sdf.patch"):
@@ -71,6 +73,9 @@ def make_step(config, ext, parent_ext, make_func):
         do_make = True
 
     if do_make:
+        print(f"    Rotating {prefix_dir}/{basename}.{ext} and {prefix_dir}/{build_dir}/{basename}.{ext}.generated")
+        rotate_file(config, f"{prefix_dir}/{basename}.{ext}")
+        rotate_file(config, f"{prefix_dir}/{build_dir}/{basename}.{ext}.generated")
         print(f"    Generating {prefix_dir}/{build_dir}/{basename}.{ext}.generated")
         make_func(config)
         print(f"    Updating hashes")
@@ -126,6 +131,18 @@ def get_params_str(config):
         # args = args.replace("=", "-")
 
     return args
+
+# Recursively renames files with the same name, but with a number appended to the end
+def rotate_file(config, filename):
+    if os.path.exists(f"{filename}.1"):
+        rotate_file_recurse(config, filename, 1)
+    if os.path.exists(filename):
+        os.rename(filename, f"{filename}.1")
+
+def rotate_file_recurse(config, filename, num):
+    if os.path.exists(f"{filename}.{num + 1}"):
+        rotate_file_recurse(config, filename, num + 1)
+    os.rename(f"{filename}.{num}", f"{filename}.{num + 1}")
 
 # File generation
 
