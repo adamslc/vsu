@@ -64,4 +64,8 @@ def main():
 
     args = parser.parse_args()
     config.update(vars(args))
-    args.func(config)
+
+    if 'func' in vars(args):
+        args.func(config)
+    else:
+        parser.print_help()
