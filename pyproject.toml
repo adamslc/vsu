@@ -10,3 +10,9 @@ dependencies = [
     "pyyaml>=6.0.3",
     "rich>=14.2.0",
 ]
+
+[project.scripts]
+vsu = "vsu.vsu:main"
+
+[tool.uv]
+package = true
