@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
 src/vsu/__init__.py
+src/vsu/__main__.py
 src/vsu/clean.py
 src/vsu/cmd.py
 src/vsu/config.py
@@ -16,5 +17,6 @@ src/vsu/vsu.py
 src/vsu.egg-info/PKG-INFO
 src/vsu.egg-info/SOURCES.txt
 src/vsu.egg-info/dependency_links.txt
+src/vsu.egg-info/entry_points.txt
 src/vsu.egg-info/requires.txt
 src/vsu.egg-info/top_level.txt

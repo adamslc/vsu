@@ -1,6 +1,6 @@
 import os
 
-import utilities
+from vsu import utilities
 
 def compute_patch(config, ext):
     basename = config["basename"]

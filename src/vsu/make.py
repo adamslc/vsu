@@ -1,9 +1,9 @@
 import os
 
-import utilities
-import config as cfg
-import hash
-import patch
+from vsu import utilities
+from vsu import config as cfg
+from vsu import hash
+from vsu import patch
 
 def make(config):
     build_dir = config["build_dir"]

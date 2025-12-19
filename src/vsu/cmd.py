@@ -1,4 +1,4 @@
-import utilities
+from vsu import utilities
 
 def cmd(config):
     VSC = config["VSC"]

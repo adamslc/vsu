@@ -4,7 +4,7 @@ import numpy as np
 
 from rich import print
 
-import make
+from vsu import make
 
 def createTimeseries(timeSeries):
     if timeSeries.attrs["vsKind"] == b"uniform":

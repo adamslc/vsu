@@ -1,5 +1,5 @@
-import utilities
-import patch
+from vsu import utilities
+from vsu import patch
 
 def clean(config):
     basename = config["basename"]

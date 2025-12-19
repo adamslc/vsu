@@ -1,8 +1,8 @@
 import os
 import shutil
 
-import utilities
-import make
+from vsu import utilities
+from vsu import make
 
 
 def run(config):
