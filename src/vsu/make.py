@@ -166,5 +166,6 @@ def generate_in(config):
     basename = config["basename"]
     build_dir = config["build_dir"]
     txpp_args = config["txpp_args"]
+    extra_txpp_args = config["extra_txpp_args"]
     prefix_dir = config["prefix_dir"]
-    utilities.run_cmd(f"source {VSC}; txpp.py -q -p {prefix_dir}/{basename}.ppp -o {prefix_dir}/{build_dir}/{basename}.in.generated {txpp_args}")
+    utilities.run_cmd(f"source {VSC}; txpp.py -q -p {prefix_dir}/{basename}.ppp -o {prefix_dir}/{build_dir}/{basename}.in.generated {txpp_args} {extra_txpp_args}")

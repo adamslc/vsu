@@ -27,6 +27,7 @@ def main():
 
     parser_make = subparsers.add_parser("make", help="Create a .in file from a .sdf or .pre file and a set of patches")
     parser_make.add_argument("--txpp-args", help="Arguments to be used during the final processing step; useful for doing parameter sweeps", default="")
+    parser_make.add_argument("--extra-txpp-args", help="Extra arguments to be used during the final processing step but not included when finding the directory to save the simulation results", default="")
     parser_make.set_defaults(func=make.make)
 
     parser_run = subparsers.add_parser("run", help="Create a .in file and use VSim to run the simulation")
