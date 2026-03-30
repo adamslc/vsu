@@ -22,7 +22,7 @@ def main():
         print(f"You can typically resolve this by running rm -r {config['build_dir']}")
         exit(1)
 
-    parser = argparse.ArgumentParser(description="Utility for text-based setup in VSim")
+    parser = argparse.ArgumentParser(description="Utility for text-based setup in VSim", conflict_handler="resolve")
     subparsers = parser.add_subparsers(title="Commands", metavar="<command>")
 
     parser_make = subparsers.add_parser("make", help="Create a .in file from a .sdf or .pre file and a set of patches")
