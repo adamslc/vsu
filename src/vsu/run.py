@@ -66,13 +66,13 @@ def run(config):
         else:
             procs_str = f"-n {num_procs}"
 
-        cmd = f"source {VSC}; mpiexec {procs_str} vorpal -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
+        cmd = f"source {VSC}; mpiexec {procs_str} {config["vorpal"]} -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
     else:
-        cmd = f"source {VSC}; vorpalser -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
+        cmd = f"source {VSC}; {config["vorpalser"]} -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
 
     if config['write_script']:
         with open(f"{output_dir}/run.sh", 'w') as file:
-            file.write(f"source {VSC}; vorpalser -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}")
+            file.write(f"source {VSC}; {config["vorpalser"]} -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}")
     else:
         log_file_name = f"{output_dir}/LOG"
         utilities.touch(log_file_name)

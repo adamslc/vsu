@@ -70,6 +70,8 @@ def startup_wizzard(advanced=False):
 
     config["VSC"] = config["VSC_PATH"] + "/VSimComposer.sh"
     config["S2P"] = find_exec_path(config["VSC_PATH"], "sdf2vpre")
+    config["vorpal"] = find_exec_path(config["VSC_PATH"], "vorpal")
+    config["vorpalser"] = find_exec_path(config["VSC_PATH"], "vorpalser")
 
     config["from_sdf"] = bool(advanced_input("Build input file from SDF file? ", "True", advanced))
 
