@@ -66,20 +66,26 @@ def run(config):
         else:
             procs_str = f"-n {num_procs}"
 
-        cmd = f"source {VSC}; mpiexec {procs_str} {config["vorpal"]} -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
+        cmd = f"{config["mpicmd"]} {procs_str} {config["vorpal"]} -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
     else:
-        cmd = f"source {VSC}; {config["vorpalser"]} -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
+        cmd = f"{config["vorpalser"]} -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
 
     if config['write_script']:
+        processed_script_prefix = config["script_prefix"].replace("{{txpp_args_str}}", txpp_args)
+
         with open(f"{output_dir}/run.sh", 'w') as file:
-            file.write(f"source {VSC}; {config["vorpalser"]} -i {basename}.in -o {output_dir}/{basename} {restart_str} {run_args}")
+            file.write(f"#!/bin/bash\n")
+            file.write(f"\n{processed_script_prefix}\n")
+            file.write(f"source {config["script_source_file"]}\n")
+            file.write(f"cd ../..\n")
+            file.write(f"{cmd}\n")
     else:
         log_file_name = f"{output_dir}/LOG"
         utilities.touch(log_file_name)
         utilities.force_symlink(log_file_name, "LOG")
 
         print("Running simulation...", flush=True)
-        utilities.run_cmd_with_logging(cmd, log_file_name, echo_to_stdout=config['echo'])
+        utilities.run_cmd_with_logging(f"source {VSC}; {cmd}", log_file_name, echo_to_stdout=config['echo'])
 
 def check_if_git_dirty(config, output_dir):
     if not config['git_hash']:

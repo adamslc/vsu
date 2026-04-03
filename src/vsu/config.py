@@ -73,6 +73,11 @@ def startup_wizzard(advanced=False):
     config["vorpal"] = find_exec_path(config["VSC_PATH"], "vorpal")
     config["vorpalser"] = find_exec_path(config["VSC_PATH"], "vorpalser")
 
+    config["mpicmd"] = "mpiexec"
+
+    config["script_prefix"] = "\n\n"
+    config["script_source_file"] = config["VSC"]
+
     config["from_sdf"] = bool(advanced_input("Build input file from SDF file? ", "True", advanced))
 
     config["start_dump"] = bool(advanced_input("Dump at the start of the simulation? ", "True", advanced))
