@@ -77,7 +77,6 @@ def run(config):
             file.write(f"#!/bin/bash\n")
             file.write(f"\n{processed_script_prefix}\n")
             file.write(f"source {config["script_source_file"]}\n")
-            file.write(f"cd ../..\n")
             file.write(f"{cmd}\n")
     else:
         log_file_name = f"{output_dir}/LOG"
