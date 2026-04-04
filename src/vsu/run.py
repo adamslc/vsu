@@ -89,7 +89,7 @@ def run(config):
     if config['slurm']:
         submit_cmd = f"sbatch {output_dir}/run.sh"
         print(f"Submitting job to slurm with command: {submit_cmd}")
-        utilities.run_cmd(submit_cmd, echo_to_stdout=True)
+        utilities.run_cmd(submit_cmd, capture_output=False)
 
 def check_if_git_dirty(config, output_dir):
     if not config['git_hash']:
