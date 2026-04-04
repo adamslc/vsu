@@ -70,7 +70,7 @@ def run(config):
     else:
         cmd = f"{config["vorpalser"]} -i {output_dir}/{basename}.in -o {output_dir}/{basename} {restart_str} {run_args}"
 
-    if config['write_script']:
+    if config['write_script'] or config['slurm']:
         processed_script_prefix = config["script_prefix"].replace("{{txpp_args_str}}", txpp_args)
 
         with open(f"{output_dir}/run.sh", 'w') as file:
@@ -85,6 +85,11 @@ def run(config):
 
         print("Running simulation...", flush=True)
         utilities.run_cmd_with_logging(f"source {VSC}; {cmd}", log_file_name, echo_to_stdout=config['echo'])
+
+    if config['slurm']:
+        submit_cmd = f"sbatch {output_dir}/run.sh"
+        print(f"Submitting job to slurm with command: {submit_cmd}")
+        utilities.run_cmd(submit_cmd, echo_to_stdout=True)
 
 def check_if_git_dirty(config, output_dir):
     if not config['git_hash']:
